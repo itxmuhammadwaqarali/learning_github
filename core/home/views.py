@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Person
-from .serializer import PeopleSerializer
+from .serializer import PeopleSerializer , LoginSerializer 
 
 @api_view(['GET', 'POST', 'PUT',])
 def index(request):
@@ -24,6 +24,15 @@ def index(request):
     # For simplicity, we are returning the courses list for all methods
     return Response(courses)  # Return the courses list as JSON response
 
+@api_view(['POST'])
+def  login(request):
+    data = request.data
+    serializer = LoginSerializer(data=data)
+
+    if serializer.is_valid():
+        data = serializer.data
+        return Response({"message": "Login successful", "data": data})
+    return Response(serializer.errors, status=400)  # Return validation errors if any
 
 @api_view(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 def person(request):
