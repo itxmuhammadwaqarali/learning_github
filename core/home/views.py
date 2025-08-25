@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from .models import Person
 from .serializer import PeopleSerializer , LoginSerializer 
 from rest_framework.views import APIView
+from rest_framework import viewsets
 
 @api_view(['GET', 'POST', 'PUT',])
 def index(request):
@@ -135,3 +136,8 @@ def person(request):
             return Response({'message': 'Person deleted successfully'}, status=204)
         except Person.DoesNotExist:
             return Response({'error': 'Person not found'}, status=404)
+
+
+class PeopleViewSet(viewsets.ModelViewSet):
+    queryset = Person.objects.all()
+    serializer_class = PeopleSerializer
