@@ -2,6 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Person
 from .serializer import PeopleSerializer , LoginSerializer 
+from rest_framework.views import APIView
 
 @api_view(['GET', 'POST', 'PUT',])
 def index(request):
@@ -33,6 +34,61 @@ def  login(request):
         data = serializer.data
         return Response({"message": "Login successful", "data": data})
     return Response(serializer.errors, status=400)  # Return validation errors if any
+
+class PersonView(APIView):
+    def get(self, request):
+        object = Person.objects.all()
+        serializer = PeopleSerializer(object, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request):
+        data = request.data
+        serializer = PeopleSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400) 
+        # return  Response({"message": "POST request received"})
+    
+    def put(self, request):
+        data = request.data
+        person_id = data.get('id')
+        try:
+            person_instance = Person.objects.get(id=person_id)
+            serializer = PeopleSerializer(person_instance, data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=400)
+        except Person.DoesNotExist:
+            return Response({'error': 'Person not found'}, status=404)
+        # return  Response({"message": "PUT request received"})
+    
+    def patch(self, request):
+        data = request.data
+        person_id = data.get('id')
+        try:
+            person_instance = Person.objects.get(id=person_id)
+            serializer = PeopleSerializer(person_instance, data=data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=400)
+        except Person.DoesNotExist:
+            return Response({'error': 'Person not found'}, status=404)
+        # return  Response({"message": "PATCH request received"})
+    
+    def delete(self, request):
+        person_id = request.data.get('id')
+        try:
+            person_instance = Person.objects.get(id=person_id)
+            person_instance.delete()
+            return Response({'message': 'Person deleted successfully'}, status=204)
+        except Person.DoesNotExist:
+            return Response({'error': 'Person not found'}, status=404)
+        # return  Response({"message": "DELETE request received"})
+
+
 
 @api_view(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 def person(request):

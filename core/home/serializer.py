@@ -4,21 +4,29 @@ import re
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
-    password = serializers.CharField()      
+    password = serializers.CharField()
+
+
 class colorSerializer(serializers.ModelSerializer):
     class Meta:
         model = color
-        fields = ['name']
+        fields = ['id', 'name']  # include id too
+
+
 class PeopleSerializer(serializers.ModelSerializer):
-    colors = colorSerializer()  # Nested serializer to include color details
-    country = serializers.SerializerMethodField()  # Default country field
+    colors = serializers.PrimaryKeyRelatedField(
+        queryset=color.objects.all(), write_only=True
+    )  # Accept color as ID when writing
+    color_detail = colorSerializer(source='colors', read_only=True)  # Show nested detail on read
+    country = serializers.SerializerMethodField()  
+
     class Meta:
         model = Person
-        fields = '__all__'  # This will include all fields from the Person model
-        # depth = 1  # To include related color details
+        fields = '__all__'  
+        extra_fields = ['color_detail', 'country']
 
     def get_country(self, obj):
-        return "Pakistan"  # Default country value 
+        return "Pakistan"  
 
     def validate_age(self, data):
         if data < 18:
@@ -30,7 +38,6 @@ class PeopleSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Invalid email address")
         if Person.objects.filter(email=data).exists():
             raise serializers.ValidationError("Email already exists")
-
         return data
     
     def validate_name(self, data):
