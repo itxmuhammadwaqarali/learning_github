@@ -12,5 +12,5 @@ urlpatterns = [
     path('person/', person),
     path('login/', login),
     path('persons/', PersonView.as_view()),  # URL for the PersonView class-based view
-    path
-]
+    path('', include(router.urls)),  # Include the router URLs
+]  

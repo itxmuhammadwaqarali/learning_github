@@ -141,3 +141,11 @@ def person(request):
 class PeopleViewSet(viewsets.ModelViewSet):
     queryset = Person.objects.all()
     serializer_class = PeopleSerializer
+
+    def list(self, request, *args, **kwargs):
+        search = request.GET.get('search')
+        queryset = self.get_queryset() 
+        if search:
+            queryset = queryset.filter(name__startswith=search)
+        serialize = PeopleSerializer(queryset, many=True)
+        return Response({'status' : 200, 'data' : serialize.data})
